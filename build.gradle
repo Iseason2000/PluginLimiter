@@ -1,0 +1,27 @@
+plugins {
+    id 'java'
+}
+
+version = '2.0'
+
+repositories {
+    mavenCentral()
+    mavenLocal()
+    maven {url = 'https://papermc.io/repo/repository/maven-public/'}
+}
+
+dependencies {
+    compileOnly 'io.papermc.paper:paper-api:1.18.2-R0.1-SNAPSHOT'
+}
+
+processResources {
+    def props = [version: version]
+    inputs.properties props
+    filteringCharset 'UTF-8'
+    filesMatching('plugin.yml') {
+        expand props
+    }
+}
+[compileJava,compileTestJava]*.options*.encoding = 'UTF-8'
+// 插件导出目录
+libsDirName = 'E:\\mc\\1.18 server\\plugins'
