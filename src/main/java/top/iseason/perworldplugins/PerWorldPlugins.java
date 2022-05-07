@@ -42,7 +42,7 @@ public class PerWorldPlugins extends JavaPlugin implements Listener {
 
     public void onLoad() {
         INSTANCE = this;
-        log("Registering event interceptor...");
+        log("开始替换 Loader...");
         pwpLoader = new PWPLoader(Bukkit.getServer());
         pwpLoader.setLoader((JavaPluginLoader) getPluginLoader());
         injectExistingPlugins(pwpLoader);
@@ -62,7 +62,6 @@ public class PerWorldPlugins extends JavaPlugin implements Listener {
             event.setCancelled(true);
         }
     }
-
 
     private void injectExistingPlugins(PWPLoader pwpLoader) {
         for (org.bukkit.plugin.Plugin p : Bukkit.getPluginManager().getPlugins()) {
