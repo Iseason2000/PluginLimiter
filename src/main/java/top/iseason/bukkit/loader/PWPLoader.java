@@ -2,10 +2,10 @@
  * Created on 17 May 2014 by _MylesC
  * Copyright 2014
  */
-package top.iseason.perworldplugins.loader;
+package top.iseason.bukkit.loader;
 
-import top.iseason.perworldplugins.listener.PWPRegisteredListener;
-import top.iseason.perworldplugins.listener.PWPTimedRegisteredListener;
+import top.iseason.bukkit.listener.PWPRegisteredListener;
+import top.iseason.bukkit.listener.PWPTimedRegisteredListener;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Server;
 import org.bukkit.Warning;

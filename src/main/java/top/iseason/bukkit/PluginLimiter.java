@@ -1,8 +1,8 @@
-package top.iseason.perworldplugins;
+package top.iseason.bukkit;
 
 import org.bukkit.command.SimpleCommandMap;
-import top.iseason.perworldplugins.command.Commands;
-import top.iseason.perworldplugins.loader.PWPLoader;
+import top.iseason.bukkit.command.Commands;
+import top.iseason.bukkit.loader.PWPLoader;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.World;
@@ -33,8 +33,8 @@ import java.util.logging.Level;
 import java.util.regex.Pattern;
 
 @SuppressWarnings("deprecation")
-public class PerWorldPlugins extends JavaPlugin implements Listener {
-    private static PerWorldPlugins INSTANCE;
+public class PluginLimiter extends JavaPlugin implements Listener {
+    private static PluginLimiter INSTANCE;
     private static PWPLoader pwpLoader;
     public List<Class<?>> exemptEvents = Arrays.asList(new Class<?>[]{AsyncPlayerPreLoginEvent.class, PlayerJoinEvent.class, PlayerKickEvent.class, PlayerLoginEvent.class, PlayerPreLoginEvent.class, PlayerQuitEvent.class});
     private boolean isExemptEnabled = true;
@@ -76,7 +76,7 @@ public class PerWorldPlugins extends JavaPlugin implements Listener {
             if (p instanceof JavaPlugin) {
                 //只修改JavaPluginLoader的
                 if (!p.getPluginLoader().getClass().equals(JavaPluginLoader.class)) continue;
-                if (p instanceof PerWorldPlugins) continue;
+                if (p instanceof PluginLimiter) continue;
                 JavaPlugin jp = (JavaPlugin) p;
                 try {
                     Field f = JavaPlugin.class.getDeclaredField("loader");
@@ -114,7 +114,7 @@ public class PerWorldPlugins extends JavaPlugin implements Listener {
         this.reload();
     }
 
-    public static PerWorldPlugins getInstance() {
+    public static PluginLimiter getInstance() {
         return INSTANCE;
     }
 
@@ -184,7 +184,7 @@ public class PerWorldPlugins extends JavaPlugin implements Listener {
     public boolean checkWorld(org.bukkit.plugin.Plugin plugin, Event e) {
         if ((e instanceof PlayerEvent)) {
             PlayerEvent e1 = (PlayerEvent) e;
-            if ((exemptEvents.contains(e.getClass())) && (PerWorldPlugins.getInstance().isExemptEnabled())) {
+            if ((exemptEvents.contains(e.getClass())) && (PluginLimiter.getInstance().isExemptEnabled())) {
                 return false;
             }
             return checkWorld(plugin, e1.getPlayer().getWorld());

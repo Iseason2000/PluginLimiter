@@ -2,9 +2,9 @@
  * Created on 17 May 2014 by _MylesC
  * Copyright 2014
  */
-package top.iseason.perworldplugins.listener;
+package top.iseason.bukkit.listener;
 
-import top.iseason.perworldplugins.PerWorldPlugins;
+import top.iseason.bukkit.PluginLimiter;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventException;
 import org.bukkit.event.EventPriority;
@@ -26,9 +26,9 @@ public class PWPRegisteredListener extends RegisteredListener {
         if (event instanceof ServerEvent) {
             super.callEvent(event);
         }
-        PerWorldPlugins instance = PerWorldPlugins.getInstance();
+        PluginLimiter instance = PluginLimiter.getInstance();
         if (instance == null) return;
-        if (PerWorldPlugins.getInstance().checkWorld(super.getPlugin(), event))
+        if (PluginLimiter.getInstance().checkWorld(super.getPlugin(), event))
             return;
         super.callEvent(event);
         /* PWP OVER */

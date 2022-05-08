@@ -1,10 +1,10 @@
-name: PerWorldPlugins
-main: top.iseason.perworldplugins.PerWorldPlugins
-description: "使你的插件只在限定的世界起作用"
-version: 2.0
+name: PluginLimiter
+main: top.iseason.bukkit.PluginLimiter
+description: "限制插件功能"
+version: 1.0
 authors: [ Iseason ]
-api-version: 1.13
-load: POSTWORLD
 commands:
-  pwp:
-    description: Commands for PerWorldPlugins
+  PluginLimiter:
+    aliases:
+      - pl
+    description: Commands for PluginLimiter

@@ -1,4 +1,4 @@
-package top.iseason.perworldplugins.command;
+package top.iseason.bukkit.command;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -6,7 +6,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import top.iseason.perworldplugins.PerWorldPlugins;
+import top.iseason.bukkit.PluginLimiter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,18 +19,18 @@ public class Commands implements CommandExecutor, TabCompleter {
             if (args.length == 1) {
                 String arg = Objects.requireNonNull(args[0]);
                 if (arg.equalsIgnoreCase("reload")) {
-                    PerWorldPlugins.getInstance().reload();
-                    sender.sendMessage(PerWorldPlugins.color("&a[&2PWP&a] &f 插件重载成功!"));
+                    PluginLimiter.getInstance().reload();
+                    sender.sendMessage(PluginLimiter.color("&a[&2PWP&a] &f 插件重载成功!"));
                 } else if (arg.equalsIgnoreCase("version")) {
-                    sender.sendMessage(PerWorldPlugins.color("&a[&2PWP&a] &f当前版本为 &l" + PerWorldPlugins.getInstance().getDescription().getVersion() + "&f of PerWorldPlugins."));
+                    sender.sendMessage(PluginLimiter.color("&a[&2PWP&a] &f当前版本为 &l" + PluginLimiter.getInstance().getDescription().getVersion() + "&f of PerWorldPlugins."));
                 } else {
-                    sender.sendMessage(PerWorldPlugins.color("&c[&4PWP&c] &fUsage: &7/pwp reload|version"));
+                    sender.sendMessage(PluginLimiter.color("&c[&4PWP&c] &fUsage: &7/pwp reload|version"));
                 }
                 return true;
             }
-            sender.sendMessage(PerWorldPlugins.color("&c[&4PWP&c] &f用法: &7/pwp reload|version"));
+            sender.sendMessage(PluginLimiter.color("&c[&4PWP&c] &f用法: &7/pwp reload|version"));
         } else {
-            sender.sendMessage(PerWorldPlugins.color("&c[&4PWP&c] &f没有权限! &7(节点为: &opwp.admin&7)"));
+            sender.sendMessage(PluginLimiter.color("&c[&4PWP&c] &f没有权限! &7(节点为: &opwp.admin&7)"));
         }
         return true;
     }
