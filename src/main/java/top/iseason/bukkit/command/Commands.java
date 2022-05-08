@@ -15,22 +15,22 @@ import java.util.Objects;
 public class Commands implements CommandExecutor, TabCompleter {
     @Override
     public boolean onCommand(CommandSender sender, @Nullable Command arg1, @Nullable String arg2, @Nullable String[] args) {
-        if (sender.isOp() || sender.hasPermission("pwp.admin")) {
+        if (sender.isOp() || sender.hasPermission("pluginLimiter.admin")) {
             if (args.length == 1) {
                 String arg = Objects.requireNonNull(args[0]);
                 if (arg.equalsIgnoreCase("reload")) {
                     PluginLimiter.getInstance().reload();
-                    sender.sendMessage(PluginLimiter.color("&a[&2PWP&a] &f 插件重载成功!"));
+                    sender.sendMessage(PluginLimiter.color("&7[&aPL&7] &a 插件重载成功!"));
                 } else if (arg.equalsIgnoreCase("version")) {
-                    sender.sendMessage(PluginLimiter.color("&a[&2PWP&a] &f当前版本为 &l" + PluginLimiter.getInstance().getDescription().getVersion() + "&f of PerWorldPlugins."));
+                    sender.sendMessage(PluginLimiter.color("&7[&aPL&7] &a当前版本为 &l" + PluginLimiter.getInstance().getDescription().getVersion() + "&f of PerWorldPlugins."));
                 } else {
-                    sender.sendMessage(PluginLimiter.color("&c[&4PWP&c] &fUsage: &7/pwp reload|version"));
+                    sender.sendMessage(PluginLimiter.color("&7[&aPL&7] &fUsage: &7/pl reload|version"));
                 }
                 return true;
             }
-            sender.sendMessage(PluginLimiter.color("&c[&4PWP&c] &f用法: &7/pwp reload|version"));
+            sender.sendMessage(PluginLimiter.color("&7[&aPL&7] &f用法: &7/pl reload|version"));
         } else {
-            sender.sendMessage(PluginLimiter.color("&c[&4PWP&c] &f没有权限! &7(节点为: &opwp.admin&7)"));
+            sender.sendMessage(PluginLimiter.color("&7[&aPL&7] &c没有权限! &7(节点为: pluginLimiter.admin&7)"));
         }
         return true;
     }

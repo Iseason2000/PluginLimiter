@@ -4,7 +4,6 @@
  */
 package top.iseason.bukkit.listener;
 
-import top.iseason.bukkit.PluginLimiter;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventException;
 import org.bukkit.event.EventPriority;
@@ -13,11 +12,12 @@ import org.bukkit.plugin.EventExecutor;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.TimedRegisteredListener;
 import org.jetbrains.annotations.NotNull;
+import top.iseason.bukkit.PluginLimiter;
 
-public class PWPTimedRegisteredListener extends TimedRegisteredListener {
+public class PLTimedRegisteredListener extends TimedRegisteredListener {
 
-    public PWPTimedRegisteredListener(Listener pluginListener, EventExecutor eventExecutor,
-                                      EventPriority eventPriority, Plugin registeredPlugin, boolean listenCancelled) {
+    public PLTimedRegisteredListener(Listener pluginListener, EventExecutor eventExecutor,
+                                     EventPriority eventPriority, Plugin registeredPlugin, boolean listenCancelled) {
         super(pluginListener, eventExecutor, eventPriority, registeredPlugin, listenCancelled);
     }
 

@@ -2,10 +2,8 @@
  * Created on 17 May 2014 by _MylesC
  * Copyright 2014
  */
-package top.iseason.bukkit.loader;
+package top.iseason.bukkit.model;
 
-import top.iseason.bukkit.listener.PWPRegisteredListener;
-import top.iseason.bukkit.listener.PWPTimedRegisteredListener;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Server;
 import org.bukkit.Warning;
@@ -17,6 +15,8 @@ import org.bukkit.event.Listener;
 import org.bukkit.plugin.*;
 import org.bukkit.plugin.java.JavaPluginLoader;
 import org.jetbrains.annotations.NotNull;
+import top.iseason.bukkit.listener.PLRegisteredListener;
+import top.iseason.bukkit.listener.PLTimedRegisteredListener;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
@@ -26,12 +26,14 @@ import java.util.logging.Level;
 import java.util.regex.Pattern;
 
 @SuppressWarnings("NullableProblems")
-public class PWPLoader implements PluginLoader {
-
+public class PLoader implements PluginLoader {
+    /**
+     * 由于 JavaPluginLoader 为Final，故采用包装的方式
+     */
     private JavaPluginLoader internal_loader;
     private final Server server;
 
-    public PWPLoader(Server instance) {
+    public PLoader(Server instance) {
         this.server = instance;
     }
 
@@ -44,7 +46,6 @@ public class PWPLoader implements PluginLoader {
     public Map<Class<? extends Event>, Set<RegisteredListener>> createRegisteredListeners(@NotNull Listener listener, @NotNull final Plugin plugin) {
         Validate.notNull(plugin, "Plugin can not be null");
         Validate.notNull(listener, "Listener can not be null");
-
         boolean useTimings = server.getPluginManager().useTimings();
         Map<Class<? extends Event>, Set<RegisteredListener>> ret = new HashMap<>();
         Set<Method> methods;
@@ -74,12 +75,7 @@ public class PWPLoader implements PluginLoader {
             }
             final Class<? extends Event> eventClass = checkClass.asSubclass(Event.class);
             method.setAccessible(true);
-            Set<RegisteredListener> eventSet = ret.get(eventClass);
-            if (eventSet == null) {
-                eventSet = new HashSet<>();
-                ret.put(eventClass, eventSet);
-            }
-
+            Set<RegisteredListener> eventSet = ret.computeIfAbsent(eventClass, k -> new HashSet<>());
             for (Class<?> clazz = eventClass; Event.class.isAssignableFrom(clazz); clazz = clazz.getSuperclass()) {
                 // This loop checks for extending deprecated events
                 if (clazz.getAnnotation(Deprecated.class) != null) {
@@ -102,25 +98,23 @@ public class PWPLoader implements PluginLoader {
                 }
             }
 
-            EventExecutor executor = new EventExecutor() {
-                @Override
-                public void execute(@NotNull Listener listener, @NotNull Event event) throws EventException {
-                    try {
-                        if (!eventClass.isAssignableFrom(event.getClass())) {
-                            return;
-                        }
-                        method.invoke(listener, event);
-                    } catch (InvocationTargetException ex) {
-                        throw new EventException(ex.getCause());
-                    } catch (Throwable t) {
-                        throw new EventException(t);
+            EventExecutor executor = (listener1, event) -> {
+                try {
+                    if (!eventClass.isAssignableFrom(event.getClass())) {
+                        return;
                     }
+                    //此处可修改是否触发
+                    method.invoke(listener1, event);
+                } catch (InvocationTargetException ex) {
+                    throw new EventException(ex.getCause());
+                } catch (Throwable t) {
+                    throw new EventException(t);
                 }
             };
             if (useTimings) {
-                eventSet.add(new PWPTimedRegisteredListener(listener, executor, eh.priority(), plugin, eh.ignoreCancelled()));
+                eventSet.add(new PLTimedRegisteredListener(listener, executor, eh.priority(), plugin, eh.ignoreCancelled()));
             } else {
-                eventSet.add(new PWPRegisteredListener(listener, executor, eh.priority(), plugin, eh.ignoreCancelled()));
+                eventSet.add(new PLRegisteredListener(listener, executor, eh.priority(), plugin, eh.ignoreCancelled()));
             }
         }
         return ret;

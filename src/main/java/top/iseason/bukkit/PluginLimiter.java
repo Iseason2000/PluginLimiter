@@ -1,13 +1,11 @@
 package top.iseason.bukkit;
 
-import org.bukkit.command.SimpleCommandMap;
-import top.iseason.bukkit.command.Commands;
-import top.iseason.bukkit.loader.PWPLoader;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.PluginCommand;
+import org.bukkit.command.SimpleCommandMap;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.event.Event;
@@ -26,6 +24,8 @@ import org.bukkit.plugin.PluginLoader;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.plugin.java.JavaPluginLoader;
+import top.iseason.bukkit.command.Commands;
+import top.iseason.bukkit.model.PLoader;
 
 import java.lang.reflect.Field;
 import java.util.*;
@@ -35,26 +35,14 @@ import java.util.regex.Pattern;
 @SuppressWarnings("deprecation")
 public class PluginLimiter extends JavaPlugin implements Listener {
     private static PluginLimiter INSTANCE;
-    private static PWPLoader pwpLoader;
+    private static PLoader pLoader;
     public List<Class<?>> exemptEvents = Arrays.asList(new Class<?>[]{AsyncPlayerPreLoginEvent.class, PlayerJoinEvent.class, PlayerKickEvent.class, PlayerLoginEvent.class, PlayerPreLoginEvent.class, PlayerQuitEvent.class});
     private boolean isExemptEnabled = true;
     private SimpleCommandMap commandMap = null;
     private final Map<String, Set<String>> pluginNameToWorlds = new HashMap<>();
 
-    public void onLoad() {
-        INSTANCE = this;
-        log("开始替换 Loader...");
-        pwpLoader = new PWPLoader(Bukkit.getServer());
-        pwpLoader.setLoader((JavaPluginLoader) getPluginLoader());
-        try {
-            Field f = Bukkit.getServer().getClass().getDeclaredField("commandMap");
-            f.setAccessible(true);
-            commandMap = (SimpleCommandMap) f.get(Bukkit.getServer());
-        } catch (NoSuchFieldException | IllegalAccessException e) {
-            log("Command Map not Found" );
-        }
-        injectExistingPlugins(pwpLoader);
-        cleanJavaPluginLoaders(pwpLoader);
+    public static void log(Level level, String s) {
+        Bukkit.getServer().getLogger().log(level, "[PerWorldPlugins] " + s);
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
@@ -71,7 +59,29 @@ public class PluginLimiter extends JavaPlugin implements Listener {
         }
     }
 
-    private void injectExistingPlugins(PWPLoader pwpLoader) {
+    public static PluginLimiter getInstance() {
+        return INSTANCE;
+    }
+
+    public void onLoad() {
+        INSTANCE = this;
+        log(Level.INFO, "开始替换 Loader...");
+        pLoader = new PLoader(Bukkit.getServer());
+        pLoader.setLoader((JavaPluginLoader) getPluginLoader());
+        try {
+            Field f = Bukkit.getServer().getClass().getDeclaredField("commandMap");
+            f.setAccessible(true);
+            commandMap = (SimpleCommandMap) f.get(Bukkit.getServer());
+            f.setAccessible(false);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            log(Level.SEVERE, "Command Map not Found");
+        }
+        injectExistingPlugins(pLoader);
+        cleanJavaPluginLoaders(pLoader);
+        log(Level.INFO, "替换 Loader 完成");
+    }
+
+    private void injectExistingPlugins(PLoader pwpLoader) {
         for (org.bukkit.plugin.Plugin p : Bukkit.getPluginManager().getPlugins()) {
             if (p instanceof JavaPlugin) {
                 //只修改JavaPluginLoader的
@@ -82,15 +92,16 @@ public class PluginLimiter extends JavaPlugin implements Listener {
                     Field f = JavaPlugin.class.getDeclaredField("loader");
                     f.setAccessible(true);
                     f.set(jp, pwpLoader);
+                    f.setAccessible(false);
                 } catch (Exception e) {
-                    log("PerWorldPlugins failed injecting " + jp.getDescription().getFullName()
+                    log(Level.SEVERE, "PerWorldPlugins failed injecting " + jp.getDescription().getFullName()
                             + " with the new PluginLoader, contact the developers on BukkitDev!" + e);
                 }
             }
         }
     }
 
-    private void cleanJavaPluginLoaders(PWPLoader pwpLoader) {
+    private void cleanJavaPluginLoaders(PLoader pwpLoader) {
         PluginManager spm = Bukkit.getPluginManager();
         try {
             Field field = spm.getClass().getDeclaredField("fileAssociations");
@@ -99,9 +110,7 @@ public class PluginLimiter extends JavaPlugin implements Listener {
             Map<Pattern, PluginLoader> map = (Map<Pattern, PluginLoader>) field.get(spm);
             map.entrySet().stream()
                     .filter(entry -> entry.getValue().getClass().equals(JavaPluginLoader.class))
-                    .forEach(entry -> {
-                        map.replace(entry.getKey(), pwpLoader);
-                    });
+                    .forEach(entry -> map.replace(entry.getKey(), pwpLoader));
         } catch (Exception e) {
             Bukkit.getServer().getLogger().log(Level.SEVERE, "PerWorldPlugins failed replacing the existing PluginLoader, contact the developers on BukkitDev!", e);
         }
@@ -110,16 +119,14 @@ public class PluginLimiter extends JavaPlugin implements Listener {
     public void onEnable() {
         if (commandMap != null)
             Bukkit.getPluginManager().registerEvents(this, this);
-        Objects.requireNonNull(getCommand("pwp")).setExecutor(new Commands());
+        Objects.requireNonNull(getCommand("PluginLimiter")).setExecutor(new Commands());
         this.reload();
-    }
-
-    public static PluginLimiter getInstance() {
-        return INSTANCE;
-    }
-
-    public void log(String s) {
-        Bukkit.getServer().getLogger().log(Level.SEVERE, "[PerWorldPlugins] " + s);
+//        try {
+//            ListenerMatcher listenerMatcher = new ListenerMatcher("top.iseason.bukkit.PluginLimiter");
+//            listenerMatcher.addMethod("onCommand:org.bukkit.event.player.PlayerCommandPreprocessEvent");
+//        } catch (ClassNotFoundException e) {
+//            throw new RuntimeException(e);
+//        }
     }
 
     public void loadConfig() {

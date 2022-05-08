@@ -4,7 +4,6 @@
  */
 package top.iseason.bukkit.listener;
 
-import top.iseason.bukkit.PluginLimiter;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventException;
 import org.bukkit.event.EventPriority;
@@ -14,15 +13,14 @@ import org.bukkit.plugin.EventExecutor;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredListener;
 import org.jetbrains.annotations.NotNull;
+import top.iseason.bukkit.PluginLimiter;
 
-public class PWPRegisteredListener extends RegisteredListener {
-    public PWPRegisteredListener(Listener listener, EventExecutor executor, EventPriority priority, Plugin plugin,
-                                 boolean ignoreCancelled) {
+public class PLRegisteredListener extends RegisteredListener {
+    public PLRegisteredListener(Listener listener, EventExecutor executor, EventPriority priority, Plugin plugin, boolean ignoreCancelled) {
         super(listener, executor, priority, plugin, ignoreCancelled);
     }
 
     public void callEvent(@NotNull Event event) throws EventException {
-        /* PWP */
         if (event instanceof ServerEvent) {
             super.callEvent(event);
         }
@@ -31,7 +29,6 @@ public class PWPRegisteredListener extends RegisteredListener {
         if (PluginLimiter.getInstance().checkWorld(super.getPlugin(), event))
             return;
         super.callEvent(event);
-        /* PWP OVER */
     }
 
 }
