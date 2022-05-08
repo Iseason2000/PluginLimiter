@@ -1,5 +1,6 @@
 package top.iseason.perworldplugins;
 
+import org.bukkit.command.SimpleCommandMap;
 import top.iseason.perworldplugins.command.Commands;
 import top.iseason.perworldplugins.loader.PWPLoader;
 import org.bukkit.Bukkit;
@@ -37,7 +38,7 @@ public class PerWorldPlugins extends JavaPlugin implements Listener {
     private static PWPLoader pwpLoader;
     public List<Class<?>> exemptEvents = Arrays.asList(new Class<?>[]{AsyncPlayerPreLoginEvent.class, PlayerJoinEvent.class, PlayerKickEvent.class, PlayerLoginEvent.class, PlayerPreLoginEvent.class, PlayerQuitEvent.class});
     private boolean isExemptEnabled = true;
-
+    private SimpleCommandMap commandMap = null;
     private final Map<String, Set<String>> pluginNameToWorlds = new HashMap<>();
 
     public void onLoad() {
@@ -45,6 +46,13 @@ public class PerWorldPlugins extends JavaPlugin implements Listener {
         log("开始替换 Loader...");
         pwpLoader = new PWPLoader(Bukkit.getServer());
         pwpLoader.setLoader((JavaPluginLoader) getPluginLoader());
+        try {
+            Field f = Bukkit.getServer().getClass().getDeclaredField("commandMap");
+            f.setAccessible(true);
+            commandMap = (SimpleCommandMap) f.get(Bukkit.getServer());
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            log("Command Map not Found" );
+        }
         injectExistingPlugins(pwpLoader);
         cleanJavaPluginLoaders(pwpLoader);
     }
@@ -54,8 +62,8 @@ public class PerWorldPlugins extends JavaPlugin implements Listener {
         String message = event.getMessage();
         String[] s = message.split(" ");
         if (s.length < 1) return;
-        String s1 = s[0].replace("/", "");
-        Command command = Bukkit.getCommandMap().getCommand(s1);
+        String s1 = s[0].substring(1);
+        Command command = commandMap.getCommand(s1);
         if (!(command instanceof PluginCommand)) return;
         PluginCommand pc = (PluginCommand) command;
         if (checkWorld(pc.getPlugin(), event.getPlayer().getWorld())) {
@@ -100,8 +108,8 @@ public class PerWorldPlugins extends JavaPlugin implements Listener {
     }
 
     public void onEnable() {
-
-        Bukkit.getPluginManager().registerEvents(this, this);
+        if (commandMap != null)
+            Bukkit.getPluginManager().registerEvents(this, this);
         Objects.requireNonNull(getCommand("pwp")).setExecutor(new Commands());
         this.reload();
     }
@@ -165,6 +173,7 @@ public class PerWorldPlugins extends JavaPlugin implements Listener {
         if (w == null) return false;
 
         String pluginName = plugin.getDescription().getName();
+
         Set<String> restrictedWorlds = pluginNameToWorlds.get(pluginName);
 
         if (restrictedWorlds == null)
