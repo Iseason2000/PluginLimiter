@@ -2,7 +2,7 @@ plugins {
     id 'java'
 }
 
-version = '2.0'
+version = '1.0'
 
 repositories {
     mavenCentral()
@@ -29,4 +29,4 @@ processResources {
 }
 [compileJava,compileTestJava]*.options*.encoding = 'UTF-8'
 // 插件导出目录
-libsDirName = 'E:\\mc\\spigot-1.7.10\\plugins'
+libsDirName = 'E:\\mc\\1.18 server\\plugins'
