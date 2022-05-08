@@ -1,3 +1,3 @@
 # PerWorldPlugins-Reloaded
 
-### 让插件在只指定的世界生效(Listener、Event & Command)
+### 限制插件功能
