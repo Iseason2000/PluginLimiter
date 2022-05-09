@@ -6,6 +6,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import top.iseason.bukkit.ConfigManager;
 import top.iseason.bukkit.PluginLimiter;
 
 import java.util.ArrayList;
@@ -19,7 +20,7 @@ public class Commands implements CommandExecutor, TabCompleter {
             if (args.length == 1) {
                 String arg = Objects.requireNonNull(args[0]);
                 if (arg.equalsIgnoreCase("reload")) {
-                    PluginLimiter.getInstance().reload();
+                    ConfigManager.reload();
                     sender.sendMessage(PluginLimiter.color("&7[&aPL&7] &a 插件重载成功!"));
                 } else if (arg.equalsIgnoreCase("version")) {
                     sender.sendMessage(PluginLimiter.color("&7[&aPL&7] &a当前版本为 &l" + PluginLimiter.getInstance().getDescription().getVersion() + "&f of PerWorldPlugins."));

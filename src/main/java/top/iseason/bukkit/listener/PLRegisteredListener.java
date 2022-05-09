@@ -8,12 +8,11 @@ import org.bukkit.event.Event;
 import org.bukkit.event.EventException;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.server.ServerEvent;
 import org.bukkit.plugin.EventExecutor;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredListener;
 import org.jetbrains.annotations.NotNull;
-import top.iseason.bukkit.PluginLimiter;
+import top.iseason.bukkit.ConfigManager;
 
 public class PLRegisteredListener extends RegisteredListener {
     public PLRegisteredListener(Listener listener, EventExecutor executor, EventPriority priority, Plugin plugin, boolean ignoreCancelled) {
@@ -21,13 +20,9 @@ public class PLRegisteredListener extends RegisteredListener {
     }
 
     public void callEvent(@NotNull Event event) throws EventException {
-        if (event instanceof ServerEvent) {
-            super.callEvent(event);
-        }
-        PluginLimiter instance = PluginLimiter.getInstance();
-        if (instance == null) return;
-        if (PluginLimiter.getInstance().checkWorld(super.getPlugin(), event))
+        if (ConfigManager.matchEvent(getPlugin(), event)) {
             return;
+        }
         super.callEvent(event);
     }
 

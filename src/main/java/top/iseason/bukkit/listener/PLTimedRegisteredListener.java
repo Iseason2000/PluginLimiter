@@ -12,7 +12,7 @@ import org.bukkit.plugin.EventExecutor;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.TimedRegisteredListener;
 import org.jetbrains.annotations.NotNull;
-import top.iseason.bukkit.PluginLimiter;
+import top.iseason.bukkit.ConfigManager;
 
 public class PLTimedRegisteredListener extends TimedRegisteredListener {
 
@@ -22,13 +22,9 @@ public class PLTimedRegisteredListener extends TimedRegisteredListener {
     }
 
     public void callEvent(@NotNull Event event) throws EventException {
-        PluginLimiter instance = PluginLimiter.getInstance();
-        if (instance == null) {
-            super.callEvent(event);
+        if (ConfigManager.matchEvent(getPlugin(), event)) {
             return;
         }
-        if (instance.checkWorld(getPlugin(), event))
-            return;
         super.callEvent(event);
     }
 
