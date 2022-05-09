@@ -15,6 +15,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.plugin.*;
 import org.bukkit.plugin.java.JavaPluginLoader;
 import org.jetbrains.annotations.NotNull;
+import top.iseason.bukkit.ConfigManager;
 import top.iseason.bukkit.listener.PLRegisteredListener;
 import top.iseason.bukkit.listener.PLTimedRegisteredListener;
 
@@ -104,6 +105,9 @@ public class PLoader implements PluginLoader {
                         return;
                     }
                     //此处可修改是否触发
+                    if (ConfigManager.matchListener(plugin, listener1, method, event)) {
+                        return;
+                    }
                     method.invoke(listener1, event);
                 } catch (InvocationTargetException ex) {
                     throw new EventException(ex.getCause());

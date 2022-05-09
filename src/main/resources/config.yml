@@ -1,17 +1,41 @@
-# This config controls what plugins work on certain worlds.
-# Example
-# limit:
-#   WorldEdit:
-#     - world
-#     - world_nether
-#   Essentials: []
-# This will make it so worldedit will only work in world & world_nether, meaning in the end it is not usable.
-# When there is no worlds in the list it will allow it for any worlds, in this example allowing all worlds.
-# Whenever a plugin is added, this config will automatically add it!
-# exempt-login-events is for excluding login events when true, this means if a plugin uses PlayerLogin it will allow it for any world. We advise this to be enabled!
-# blocked-msg is the string displayed to a client when a command is blocked
-# check-for-updates is the controller for if updates should be alerted to the users with the permissions/op.
-exempt-login-events: true
+# 插件配置
+# 例子
+#limits:
+#  MMOItems:
+#    enable: true
+#    # 限制器1 在world_nether 世界 和world世界中的(0,0,0) ~(100,255,100)的区域中 禁用/xxx generate 命令 使用正则表达式
+#    limiter1:
+#      enable: true
+#      location:
+#        - "world_nether"
+#        - "world:0,0,0:100,255,100"
+#      commands:
+#        - "/.? generate.*"
+#    # 限制器2 在非世界world中阻止 net.Indyuce.mmoitems.listener.ItemUse 中的 rightClickEffects(PlayerInteractEvent event) 监听器被调用
+#    # 限制器2 在非世界world中阻止 net.Indyuce.mmoitems.listener.CraftingListener 中的所有监听器
+#    # 限制器2 在非世界world中阻止 net.Indyuce.mmoitems.api.event.AbilityUseEvent 事件被call
+#    limiter2:
+#      enable: true
+#      listeners:
+#        net.Indyuce.mmoitems.listener.ItemUse:
+#          - "rightClickEffects:org.bukkit.event.player.PlayerInteractEvent"
+#        net.Indyuce.mmoitems.listener.CraftingListener: all
+#      events:
+#        - "net.Indyuce.mmoitems.api.event.AbilityUseEvent"
+#      locations-R:
+#        - world
+Global:
+  enable: true
+  # 绕过登录、退出事件,以免玩家数据获取不到
+  limiter1:
+    enable: true
+    eventsR:
+      - org.bukkit.event.player.AsyncPlayerPreLoginEvent
+      - org.bukkit.event.player.PlayerJoinEvent
+      - org.bukkit.event.player.PlayerKickEvent
+      - org.bukkit.event.player.PlayerLoginEvent
+      - org.bukkit.event.player.PlayerPreLoginEvent
+      - org.bukkit.event.player.PlayerQuitEvent
+limits:
 
-check-for-updates: false
-limit: {}
+

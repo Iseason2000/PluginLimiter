@@ -1,9 +1,11 @@
 package top.iseason.bukkit.model.matchers;
 
-import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.event.Event;
+import top.iseason.bukkit.PluginLimiter;
 
-import java.awt.*;
 import java.util.HashSet;
+import java.util.List;
+import java.util.logging.Level;
 
 public class EventMatcher extends BaseMatcher {
     private final HashSet<Class<?>> events = new HashSet<>();
@@ -11,11 +13,6 @@ public class EventMatcher extends BaseMatcher {
 
     public EventMatcher(boolean matchAll) {
         this.matchAll = matchAll;
-    }
-
-    //todo: 完成反序列化
-    public static BaseMatcher fromConfig(ConfigurationSection section) {
-        return null;
     }
 
     public boolean addEvent(String event) {
@@ -38,5 +35,15 @@ public class EventMatcher extends BaseMatcher {
         if (!(obj instanceof Event)) return checkIfReverse(false);
         Event event = (Event) obj;
         return checkIfReverse(events.contains(event.getClass()));
+    }
+
+    public static EventMatcher fromConfig(List<String> stringList) {
+        EventMatcher eventMatcher = new EventMatcher(stringList.isEmpty());
+        for (String s : stringList) {
+            if (!eventMatcher.addEvent(s)) {
+                PluginLimiter.log(Level.WARNING, "Event not found " + s);
+            }
+        }
+        return eventMatcher;
     }
 }

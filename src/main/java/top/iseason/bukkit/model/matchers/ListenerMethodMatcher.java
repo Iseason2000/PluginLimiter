@@ -1,6 +1,5 @@
 package top.iseason.bukkit.model.matchers;
 
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.event.EventHandler;
 
 import java.lang.reflect.Method;
@@ -12,17 +11,15 @@ public class ListenerMethodMatcher extends BaseMatcher {
     private final Class<?> listenerClass;
     private final ArrayList<Method> methods = new ArrayList<>();
     private final HashSet<Method> methodsCache = new HashSet<>();
-    private final boolean matchAll;
+
+
+    private boolean matchAll;
 
     public ListenerMethodMatcher(Class<?> listenerClass, boolean matchAll) {
         this.listenerClass = listenerClass;
         this.matchAll = matchAll;
     }
 
-    //todo: 完成反序列化
-    public static BaseMatcher fromConfig(ConfigurationSection section) {
-        return null;
-    }
 
     /**
      * 只能有一个参数
@@ -38,7 +35,7 @@ public class ListenerMethodMatcher extends BaseMatcher {
         try {
             Class<?> parameterClass = Class.forName(parameter);
             String name = split[0];
-            Method method = listenerClass.getMethod(name, parameterClass);
+            Method method = listenerClass.getDeclaredMethod(name, parameterClass);
             if (method.getAnnotation(EventHandler.class) == null) {
                 return false;
             }
@@ -63,4 +60,9 @@ public class ListenerMethodMatcher extends BaseMatcher {
         }
         return checkIfReverse(false);
     }
+
+    public void setMatchAll(boolean matchAll) {
+        this.matchAll = matchAll;
+    }
+
 }

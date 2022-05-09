@@ -3,17 +3,19 @@ package top.iseason.bukkit.model.matchers;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.util.NumberConversions;
+import top.iseason.bukkit.PluginLimiter;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
 
 public class LocationMatcher extends BaseMatcher {
     private final ArrayList<Area> areas = new ArrayList<>();
+    private final boolean matchAll;
 
-    //todo: 完成反序列化
-    public static BaseMatcher fromConfig(ConfigurationSection section) {
-        return null;
+    public LocationMatcher(boolean matchAll) {
+        this.matchAll = matchAll;
     }
 
     public static Location toLocation(World world, String loc) {
@@ -26,9 +28,20 @@ public class LocationMatcher extends BaseMatcher {
         }
     }
 
+    public static LocationMatcher fromConfig(List<String> stringList) {
+        LocationMatcher locationMatcher = new LocationMatcher(stringList.isEmpty());
+        for (String s : stringList) {
+            if (!locationMatcher.addArea(s)) {
+                PluginLimiter.log(Level.WARNING, "Location not found " + s);
+            }
+        }
+        return locationMatcher;
+    }
+
     //World:x1,y1,z1:x2,y2,z2
     //World
     public boolean addArea(String locationStr) {
+        if (matchAll) checkIfReverse(true);
         String[] split = locationStr.split(":");
         if (split.length == 3) {
             World world = Bukkit.getWorld(split[0]);
@@ -48,6 +61,7 @@ public class LocationMatcher extends BaseMatcher {
 
     @Override
     public boolean match(Object obj) {
+        if (matchAll) return checkIfReverse(true);
         if (!(obj instanceof Location)) return checkIfReverse(false);
         Location location = (Location) obj;
         for (Area area : areas) {
@@ -88,11 +102,7 @@ public class LocationMatcher extends BaseMatcher {
             if (Math.abs(loc.getY() - midLoc.getY()) > Math.abs(loc2.getY() - loc1.getY()) * 0.5D) {
                 return false;
             }
-            if (Math.abs(loc.getZ() - midLoc.getZ()) > Math.abs(loc2.getZ() - loc1.getZ()) * 0.5D) {
-                return false;
-            }
-            return true;
-
+            return !(Math.abs(loc.getZ() - midLoc.getZ()) > Math.abs(loc2.getZ() - loc1.getZ()) * 0.5D);
         }
     }
 }

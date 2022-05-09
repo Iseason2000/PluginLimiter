@@ -7,4 +7,6 @@ commands:
   PluginLimiter:
     aliases:
       - pl
+      - plr
+      - pnl
     description: Commands for PluginLimiter
