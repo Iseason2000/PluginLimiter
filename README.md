@@ -1,13 +1,53 @@
 # PluginLimiter
 
-### 限制插件功能
+## 限制插件功能
 
 功能包括
 
-* 限制世界
-* 限定Event
-* 限定listener
-* 限定Command
+* 限制插件**生效的位置**(location)
+* 限制插件/全局**监听事件**(event)
+* 限制插件 **监听器** (listener)
+* 限制插件/全局 **命令** (command)
+
+## 描述
+
+插件灵感来源  [PerWorldplugins](https://github.com/TonimatasMCDEV/PerWorldPlugins) 一个让插件只在指定世界生效的插件。
+
+看了它源码之后发现了新大陆，原来插件还可以控制其他插件(非依赖关系)，于是写了这个插件。
+
+主要功能是**限制插件只在某些位置生效或者只在某些位置不生效。**
+
+最简单的例子是让xxx插件只在某些世界/位置生效或者不在某些世界生效，具体看下面怎么配置
+
+对于有**开发经验**的开发者来说，利用本插件可以对**插件之间的不兼容进行热处理**(治标不治本，仅处理报错问题)
+
+比如我这有个报错
+
+![image-20220510231926736](https://pic.imgdb.cn/item/627a828a094754312980ab4a.png)
+
+看到 PluginLimiter字段就是 插件可以处理的报错，对Citizens插件进行限制(本例子仅作演示，不代表这样可以)
+
+~~~ text
+Citizens:
+    enable: true
+    matcher1:
+      enable: false
+      listeners:
+        net.citizensnpcs.EventListen:
+        - onPlayerInteractEntity
+~~~
+
+以上禁用了Citizens net.citizensnpcs.EventListen 监听器中的 的玩家交互事件 ，不再报错（但是右键npc的功能废了，需要自己取舍）
+
+## 命令&权限
+
+~~~text
+/PluginLimiter reload  重载配置
+/PluginLimiter version 查看插件版本
+
+PluginLimiter 的缩写为pl、plr、pnl
+运行命令需要op 或者 权限 pluginLimiter.admin
+~~~
 
 ## 插件配置
 
@@ -48,7 +88,7 @@ events: all
 events:
 - org.bukkit.event.player.AsyncPlayerPreLoginEvent
 - org.bukkit.event.player.PlayerJoinEvent
-~~~ 
+~~~
 
 ==========================================
 
@@ -58,14 +98,14 @@ events:
 
 ~~~ text
 listeners: all
-~~~ 
+~~~
 
 匹配特定监听器下的所有监听方法
 
 ~~~ text
 listeners:
   net.Indyuce.mmoitems.listener.ItemUse: all
-~~~ 
+~~~
 
 匹配特定监听器下的特定方法
 有2种写法，一个是方法名(将匹配第一个符合的方法)，一个是方法名:参数类型
@@ -75,7 +115,7 @@ listeners:
    net.Indyuce.mmoitems.listener.DisableInteractions:
     - clickInteractions
     - clickInteractions:org.bukkit.event.player.PlayerInteractEvent
-~~~ 
+~~~
 
 ==========================================
 
@@ -98,7 +138,7 @@ commands:
 - "/spawn"         //匹配 /spawn
 - "/.? second .*"  //匹配第二个参数是 second 的命令
 等等
-~~~ 
+~~~
 
 ==========================================
 
@@ -116,7 +156,7 @@ locations: all
 locations:
 - world
 - world_island
-~~~ 
+~~~
 
 匹配某个矩形区域 像WorldEdit 的2个点一样 格式: 世界名:点一(x,y,z):点二(x,y,z)
 
@@ -203,3 +243,11 @@ MMOItems:
 ==========================================
 
 所有插件匹配器位于limits键中
+
+## 最后需要注意的
+
+* 插件不支持热重载
+
+* 使用本插件造成的任何后果本人不负责，请自行测试完再用于生产环境
+
+  
