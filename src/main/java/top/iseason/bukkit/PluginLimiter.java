@@ -13,6 +13,7 @@ import org.bukkit.plugin.PluginLoader;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.plugin.java.JavaPluginLoader;
+import top.iseason.bukkit.bstat.Metrics;
 import top.iseason.bukkit.command.Commands;
 import top.iseason.bukkit.model.PLoader;
 
@@ -41,6 +42,7 @@ public class PluginLimiter extends JavaPlugin implements Listener {
         if (pLoader != null) {
             return;
         }
+        new Metrics(this, 15162);
         log(Level.INFO, "开始替换 Loader...");
         pLoader = new PLoader(Bukkit.getServer());
         pLoader.setLoader((JavaPluginLoader) getPluginLoader());
@@ -62,6 +64,7 @@ public class PluginLimiter extends JavaPlugin implements Listener {
             Bukkit.getPluginManager().registerEvents(this, this);
         Objects.requireNonNull(getCommand("PluginLimiter")).setExecutor(new Commands());
         ConfigManager.reload();
+
     }
 
 
