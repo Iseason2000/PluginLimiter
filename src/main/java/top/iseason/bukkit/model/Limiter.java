@@ -78,8 +78,7 @@ public class Limiter {
             if (event instanceof GenericGameEvent) {
                 return ((GenericGameEvent) event).getLocation();
             }
-            Class<?> lootGenerateEvent = ConfigManager.getLootGenerateEvent();
-            if (lootGenerateEvent != null && lootGenerateEvent.isAssignableFrom(event.getClass())) {
+            if (ConfigManager.hasLootGenerateEvent() && event instanceof LootGenerateEvent) {
                 Entity entity = ((LootGenerateEvent) event).getEntity();
                 if (entity != null)
                     return ((LootGenerateEvent) event).getEntity().getLocation();
