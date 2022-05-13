@@ -2,9 +2,9 @@
 # 本插件提供4种条件来控制插件行为
 # 本插件无法限制 任务 (task)
 #
-# whitelist 为全局白名单 当 匹配到某一规则时 将停止 黑名单、插件匹配器的匹配，并放行事件
+# whitelist 为全局白名单(不包括listeners) 当 匹配到某一规则时 将停止 黑名单、插件匹配器的匹配，并放行事件
 #
-# blacklist 为全局黑 当 匹配到某一规则时 将停止、插件匹配器的匹配，并阻止事件
+# blacklist 为全局黑名单(不包括listeners) 当 匹配到某一规则时 将停止、插件匹配器的匹配，并阻止事件
 #
 # limits 键下储存插件匹配器
 #
@@ -143,7 +143,7 @@ whitelist:
   # 绕过登录、退出事件,以免玩家数据获取不到,强烈建议开启
   matcher1:
     enable: true
-    events-R:
+    events:
       - org.bukkit.event.player.AsyncPlayerPreLoginEvent
       - org.bukkit.event.player.PlayerJoinEvent
       - org.bukkit.event.player.PlayerKickEvent
