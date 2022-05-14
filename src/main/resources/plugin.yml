@@ -1,7 +1,7 @@
 name: PluginLimiter
 main: top.iseason.bukkit.PluginLimiter
 description: "限制插件功能"
-version: 1.1
+version: 1.2
 authors: [ Iseason ]
 commands:
   PluginLimiter:

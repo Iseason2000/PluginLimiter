@@ -5,6 +5,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.command.SimpleCommandMap;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -113,8 +114,14 @@ public class PluginLimiter extends JavaPlugin implements Listener {
         Command command = commandMap.getCommand(s1);
         if (!(command instanceof PluginCommand)) return;
         PluginCommand pc = (PluginCommand) command;
-        if (ConfigManager.matchCommand(pc.getPlugin(), message, event.getPlayer().getLocation())) {
+        Player player = event.getPlayer();
+        if (ConfigManager.matchCommand(pc.getPlugin(), message, player.getLocation())) {
+            String commandMessage = ConfigManager.getCommandMessage();
+            if (!commandMessage.isEmpty()) {
+                player.sendMessage(color(commandMessage.replace("%player%", player.getDisplayName())));
+            }
             event.setCancelled(true);
+
         }
     }
 

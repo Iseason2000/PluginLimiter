@@ -138,6 +138,9 @@
 # 所有插件匹配器位于limits键中
 #
 
+# 命令被阻止时的消息 %player% 为玩家名，留空不提示，支持&色彩
+block-command-message: ""
+
 whitelist:
   enable: true
   # 绕过登录、退出事件,以免玩家数据获取不到,强烈建议开启
