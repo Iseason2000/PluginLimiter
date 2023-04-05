@@ -6,47 +6,39 @@ import org.bukkit.command.Command;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.command.SimpleCommandMap;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
-import org.bukkit.event.Listener;
+import org.bukkit.event.*;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
-import org.bukkit.plugin.PluginLoader;
-import org.bukkit.plugin.PluginManager;
+import org.bukkit.plugin.EventExecutor;
+import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.RegisteredListener;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.plugin.java.JavaPluginLoader;
 import top.iseason.bukkit.bstat.Metrics;
 import top.iseason.bukkit.command.Commands;
-import top.iseason.bukkit.model.PLoader;
 
 import java.lang.reflect.Field;
-import java.util.Map;
-import java.util.Objects;
+import java.lang.reflect.Method;
+import java.util.*;
 import java.util.logging.Level;
-import java.util.regex.Pattern;
 
 public class PluginLimiter extends JavaPlugin implements Listener {
     private static PluginLimiter INSTANCE;
-    private static PLoader pLoader = null;
+    //    private static PLoader pLoader = null;
     private SimpleCommandMap commandMap = null;
 
     public static void log(Level level, String s) {
         Bukkit.getServer().getLogger().log(level, "[PluginLimiter] " + s);
     }
 
-
     public static PluginLimiter getInstance() {
         return INSTANCE;
     }
 
+    public PluginLimiter() {
+//        injectExistingPlugins();
+    }
+
     public void onLoad() {
         INSTANCE = this;
-        if (pLoader != null) {
-            return;
-        }
-        new Metrics(this, 15162);
-        log(Level.INFO, "开始替换 Loader...");
-        pLoader = new PLoader(Bukkit.getServer());
-        pLoader.setLoader((JavaPluginLoader) getPluginLoader());
         try {
             Field f = Bukkit.getServer().getClass().getDeclaredField("commandMap");
             f.setAccessible(true);
@@ -55,9 +47,7 @@ public class PluginLimiter extends JavaPlugin implements Listener {
         } catch (NoSuchFieldException | IllegalAccessException e) {
             log(Level.SEVERE, "Command Map not Found");
         }
-        injectExistingPlugins(pLoader);
-        replaceJavaPluginLoaders(pLoader);
-        log(Level.INFO, "替换 Loader 完成");
+        new Metrics(this, 15162);
     }
 
     public void onEnable() {
@@ -66,44 +56,74 @@ public class PluginLimiter extends JavaPlugin implements Listener {
         Objects.requireNonNull(getCommand("PluginLimiter")).setExecutor(new Commands());
         ConfigManager.reload();
 
+//        replaceJavaPluginLoaders();
+        Bukkit.getScheduler().runTaskAsynchronously(this, this::proxyListeners);
     }
 
-
-    private void injectExistingPlugins(PLoader pwpLoader) {
-        for (org.bukkit.plugin.Plugin p : Bukkit.getPluginManager().getPlugins()) {
-            if (p instanceof JavaPlugin) {
-                //只修改JavaPluginLoader的
-                if (!p.getPluginLoader().getClass().equals(JavaPluginLoader.class)) continue;
-                if (p instanceof PluginLimiter) continue;
-                JavaPlugin jp = (JavaPlugin) p;
-                try {
-                    Field f = JavaPlugin.class.getDeclaredField("loader");
-                    f.setAccessible(true);
-                    f.set(jp, pwpLoader);
-                    f.setAccessible(false);
-                } catch (Exception e) {
-                    log(Level.SEVERE, "PluginLimiter failed injecting " + jp.getDescription().getFullName()
-                            + " with the new PluginLoader, contact the developers on BukkitDev!" + e);
-                }
+    private void proxyListeners() {
+        log(Level.INFO, "开始替换监听器");
+        //储存所有插件的所有监听器
+        HashMap<Plugin, HashSet<Listener>> map = new HashMap<>();
+        //所有事件的监听器
+        for (HandlerList handlerList : HandlerList.getHandlerLists()) {
+            //单个事件的所有监听器
+            for (RegisteredListener registeredListener : handlerList.getRegisteredListeners()) {
+                map.computeIfAbsent(registeredListener.getPlugin(), it -> new HashSet<>()).add(registeredListener.getListener());
             }
         }
+        //重新注册监听器
+        HandlerList.unregisterAll();
+        map.forEach((p, l) -> {
+            for (Listener listener : l) {
+                Set<Method> methods;
+                try {
+                    Method[] publicMethods = listener.getClass().getMethods();
+                    Method[] privateMethods = listener.getClass().getDeclaredMethods();
+                    methods = new HashSet<>(publicMethods.length + privateMethods.length, 1.0f);
+                    Collections.addAll(methods, publicMethods);
+                    Collections.addAll(methods, privateMethods);
+                } catch (Exception ignored) {
+                    continue;
+                }
+                for (Method method : methods) {
+                    final EventHandler eh = method.getAnnotation(EventHandler.class);
+                    if (eh == null) continue;
+                    if (method.isBridge() || method.isSynthetic()) {
+                        continue;
+                    }
+                    final Class<?> checkClass;
+                    if (method.getParameterTypes().length != 1 || !Event.class.isAssignableFrom(checkClass = method.getParameterTypes()[0])) {
+                        continue;
+                    }
+                    final Class<? extends Event> eventClass = checkClass.asSubclass(Event.class);
+                    method.setAccessible(true);
+                    if (ConfigManager.matchEvent(p, null) || ConfigManager.matchListener(p, listener, method, null)) {
+                        continue;
+                    }
+                    EventExecutor executor = (listener1, event) -> {
+                        try {
+                            if (!eventClass.isAssignableFrom(event.getClass())) {
+                                return;
+                            }
+                            if (ConfigManager.matchEvent(p, event)) {
+                                return;
+                            }
+                            //此处可修改是否触发
+                            if (ConfigManager.matchListener(p, listener1, method, event)) {
+                                return;
+                            }
+                            method.invoke(listener1, event);
+                        } catch (Throwable t) {
+                            throw new EventException(t);
+                        }
+                    };
+                    Bukkit.getPluginManager().registerEvent(eventClass, listener, eh.priority(), executor, p, eh.ignoreCancelled());
+                }
+            }
+        });
+        HandlerList.bakeAll();
+        log(Level.INFO, "监听器替换完成");
     }
-
-    private void replaceJavaPluginLoaders(PLoader pwpLoader) {
-        PluginManager spm = Bukkit.getPluginManager();
-        try {
-            Field field = spm.getClass().getDeclaredField("fileAssociations");
-            field.setAccessible(true);
-            @SuppressWarnings("unchecked")
-            Map<Pattern, PluginLoader> map = (Map<Pattern, PluginLoader>) field.get(spm);
-            map.entrySet().stream()
-                    .filter(entry -> entry.getValue().getClass().equals(JavaPluginLoader.class))
-                    .forEach(entry -> map.replace(entry.getKey(), pwpLoader));
-        } catch (Exception e) {
-            Bukkit.getServer().getLogger().log(Level.SEVERE, "PluginLimiter failed replacing the existing PluginLoader, contact the developers on BukkitDev!", e);
-        }
-    }
-
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     public void onCommand(PlayerCommandPreprocessEvent event) {
@@ -121,7 +141,6 @@ public class PluginLimiter extends JavaPlugin implements Listener {
                 player.sendMessage(color(commandMessage.replace("%player%", player.getDisplayName())));
             }
             event.setCancelled(true);
-
         }
     }
 

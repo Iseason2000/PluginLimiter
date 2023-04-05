@@ -12,7 +12,6 @@ public class ListenerMethodMatcher extends BaseMatcher {
     private final ArrayList<Method> methods = new ArrayList<>();
     private final HashSet<Method> methodsCache = new HashSet<>();
 
-
     private boolean matchAll;
 
     public ListenerMethodMatcher(Class<?> listenerClass, boolean matchAll) {

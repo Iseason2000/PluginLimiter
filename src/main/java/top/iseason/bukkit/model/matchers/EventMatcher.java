@@ -32,6 +32,7 @@ public class EventMatcher extends BaseMatcher {
     @Override
     public boolean match(Object obj) {
         if (matchAll) return checkIfReverse(true);
+        if (obj == null) return checkIfReverse(false);
         if (!(obj instanceof Event)) return checkIfReverse(false);
         Event event = (Event) obj;
         return checkIfReverse(events.contains(event.getClass()));

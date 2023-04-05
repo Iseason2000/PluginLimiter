@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="PerWorldPlugins">
+    <output-path>$PROJECT_DIR$/../../../.Export</output-path>
+    <root id="archive" name="PerWorldPlugins.jar">
+      <element id="module-output" name="PerWorldPlugins" />
+    </root>
+  </artifact>
+</component>

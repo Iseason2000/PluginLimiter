@@ -26,7 +26,6 @@ import java.util.ArrayList;
 
 public class Limiter {
 
-
     private final boolean enabled;
     private final ArrayList<PMatcher> matchers = new ArrayList<>();
     private final boolean isReverse;
@@ -44,6 +43,7 @@ public class Limiter {
     }
 
     public static Location getLocation(Event event) {
+        if (event == null) return null;
         if ((event instanceof PlayerEvent)) {
             return ((PlayerEvent) event).getPlayer().getLocation();
         }
